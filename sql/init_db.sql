@@ -2,7 +2,7 @@
 CREATE TYPE booking_status AS ENUM ('PENDING', 'CONFIRMED', 'CANCELLED');
 
 -- User Table (customer & agent)
-CREATE TABLE "user" (
+CREATE TABLE "users" (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
