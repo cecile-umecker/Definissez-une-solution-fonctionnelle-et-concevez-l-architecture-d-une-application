@@ -16,5 +16,61 @@
   </div>
 </nav>
 
-<main class="main-content">
+<main class="main-content-fluid"> 
+  @if (authService.currentUser$ | async; as user) {
+    @if (user.role === 'ROLE_AGENT') {
+      <div class="agent-container">
+        <aside class="sidebar">
+          <div class="sidebar-header">
+            <h3>Messages</h3>
+            <span class="online-status">En ligne</span>
+          </div>
+          
+          <div class="conv-list">
+            <div class="conv-item active">
+              <div class="avatar">M</div>
+              <div class="conv-text">
+                <span class="name">Micka (Client)</span>
+                <p class="preview">Bonjour, j'ai besoin d'aide...</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="chat-viewport">
+          <div class="messages-list">
+            <div class="message incoming">
+              <p>Bonjour ! Comment se passe la location ?</p>
+            </div>
+            <div class="message outgoing">
+              <p>Bonjour, tout va bien merci.</p>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <input type="text" placeholder="Répondre au client...">
+            <button class="btn-send">Envoyer</button>
+          </div>
+        </section>
+      </div>
+    }
+    @else if (user.role === 'ROLE_USER') {
+      <div class="client-home">
+        <div class="hero-section">
+          <h1>Bienvenue chez YourCarYourWay</h1>
+          <p>Besoin d'aide ou d'informations sur votre réservation ?</p>
+        </div>
+        <div class="chat-trigger-container">
+          <div class="chat-card">
+            <div class="chat-icon">💬</div>
+            <h3>Assistance en direct</h3>
+            <p>Discutez instantanément avec l'un de nos agents.</p>
+            <button class="btn-open-chat">Démarrer la discussion</button>
+          </div>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="loading">Initialisation de la session...</div>
+  }
 </main>
