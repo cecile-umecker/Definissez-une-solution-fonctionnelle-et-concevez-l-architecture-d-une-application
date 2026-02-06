@@ -42,4 +42,19 @@ export class AuthService {
   getUserValue() {
     return this.currentUserSubject.value;
   }
+
+  logout(): Observable<any> {
+    return this.http.post(`${this.API_URL}/logout`, {}, { withCredentials: true }).pipe(
+      tap(() => {
+        // On vide l'utilisateur dans l'application
+        this.currentUserSubject.next(null);
+        console.log('Déconnexion réussie');
+      }),
+      catchError((err) => {
+        // Même en cas d'erreur serveur, on vide le local pour débloquer l'UI
+        this.currentUserSubject.next(null);
+        return of(null);
+      })
+    );
+  }
 }
