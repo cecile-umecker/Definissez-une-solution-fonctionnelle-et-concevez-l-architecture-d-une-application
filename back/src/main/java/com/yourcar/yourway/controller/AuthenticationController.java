@@ -4,7 +4,12 @@ import com.yourcar.yourway.dto.LoginRequest;
 import com.yourcar.yourway.dto.RegisterRequest;
 import com.yourcar.yourway.dto.UserResponse;
 import com.yourcar.yourway.service.AuthService;
+
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +29,8 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        ResponseCookie cookie = authService.authenticate(request);
-        
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body("Connexion réussie.");
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {        
+        return ResponseEntity.ok(Map.of("message", "Connexion réussie"));
     }
 
     @GetMapping("/me")
