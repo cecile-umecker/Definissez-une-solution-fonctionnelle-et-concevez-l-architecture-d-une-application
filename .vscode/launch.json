@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-YourcaryourwayApplication<yourway>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.yourcar.yourway.YourcaryourwayApplication",
+      "projectName": "yourway",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
