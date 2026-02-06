@@ -1,4 +1,4 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of, BehaviorSubject } from 'rxjs';
 
@@ -9,23 +9,37 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly API_URL = 'http://localhost:8080/api/auth';
 
-  // Le BehaviorSubject qui contient l'état de l'utilisateur (null au début)
+  // On reste sur le BehaviorSubject qui fonctionne bien
   private currentUserSubject = new BehaviorSubject<any | null>(null);
-  // Observable que les composants vont écouter
   currentUser$ = this.currentUserSubject.asObservable();
 
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.API_URL}/login`, credentials, {
-      withCredentials: true // CRUCIAL pour que le navigateur accepte le cookie JWT
+      withCredentials: true 
     }).pipe(
       tap(user => {
-        this.currentUserSubject.next(user); // On stocke l'utilisateur si succès
+        this.currentUserSubject.next(user); 
       })
     );
   }
 
-  // Cette méthode servira à la Guard
+  // On corrige ici : on utilise .next() au lieu de .set()
+  checkAuth(): Observable<any> {
+    return this.http.get(`${this.API_URL}/me`, { withCredentials: true }).pipe(
+      tap(user => this.currentUserSubject.next(user)),
+      catchError(() => {
+        this.currentUserSubject.next(null);
+        return of(null);
+      })
+    );
+  }
+
   isLoggedIn(): boolean {
     return this.currentUserSubject.value !== null;
+  }
+
+  // Petite méthode pour récupérer facilement la valeur actuelle (pour le prénom)
+  getUserValue() {
+    return this.currentUserSubject.value;
   }
 }

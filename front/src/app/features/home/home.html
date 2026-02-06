@@ -1,1 +1,6 @@
-<p>home works!</p>
+@if (authService.currentUser$ | async; as user) {
+  <h1>Bienvenue, {{ user.firstName }} !</h1>
+  <p>Rôle : {{ user.role === 'ROLE_USER' ? 'Client' : 'Agent' }}</p>
+} @else {
+  <p>Chargement du profil...</p>
+}

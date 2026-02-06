@@ -30,7 +30,13 @@ public class AuthenticationController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletResponse response) {        
-        return ResponseEntity.ok(Map.of("message", "Connexion réussie"));
+        // 1. Appeler le service pour authentifier et créer le cookie
+        ResponseCookie cookie = authService.authenticate(request); 
+
+        // 2. Ajouter le cookie dans le header "Set-Cookie" de la réponse
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(Map.of("message", "Connexion réussie"));
     }
 
     @GetMapping("/me")
