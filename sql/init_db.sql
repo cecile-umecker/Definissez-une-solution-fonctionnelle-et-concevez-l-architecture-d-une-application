@@ -27,7 +27,7 @@ CREATE TABLE vehicle (
     brand VARCHAR(100) NOT NULL,
     model VARCHAR(100) NOT NULL,
     license_plate VARCHAR(20) UNIQUE NOT NULL,
-    category VARCHAR(50) NOT NULL -- ACRISS
+    category VARCHAR(50) NOT NULL
 );
 
 -- Booking Table
@@ -37,7 +37,7 @@ CREATE TABLE booking (
     end_date TIMESTAMP NOT NULL,
     total_amount DECIMAL(10, 2) NOT NULL, 
     status booking_status DEFAULT 'PENDING',
-    user_id INTEGER REFERENCES "user"(id),
+    user_id INTEGER REFERENCES "users"(id),
     vehicle_id INTEGER REFERENCES vehicle(id),
     departure_agency_id INTEGER REFERENCES agency(id),
     return_agency_id INTEGER REFERENCES agency(id)
@@ -47,9 +47,9 @@ CREATE TABLE booking (
 CREATE TABLE support_ticket (
     id SERIAL PRIMARY KEY,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status BOOLEAN DEFAULT TRUE, -- Open/Closed
+    status BOOLEAN DEFAULT TRUE,
     subject VARCHAR(255) NOT NULL,
-    user_id INTEGER REFERENCES "user"(id)
+    user_id INTEGER REFERENCES "users"(id)
 );
 
 -- ChatMessage Table (For chat and text messages)
@@ -57,9 +57,9 @@ CREATE TABLE chat_message (
     id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_real_time BOOLEAN DEFAULT FALSE, -- Distinguishes chat and message
+    is_real_time BOOLEAN DEFAULT FALSE,
     ticket_id INTEGER REFERENCES support_ticket(id),
-    sender_id INTEGER REFERENCES "user"(id) -- The sender relationship
+    sender_id INTEGER REFERENCES "users"(id)
 );
 
 -- VideoSession Table (For video calls)

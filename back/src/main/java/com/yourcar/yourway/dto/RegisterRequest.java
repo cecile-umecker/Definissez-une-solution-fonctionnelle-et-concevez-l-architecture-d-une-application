@@ -7,5 +7,6 @@ public record RegisterRequest(
     String email,
     String password,
     String address,
-    LocalDate birthDate
+    LocalDate birthDate,
+    String role
 ) {}
