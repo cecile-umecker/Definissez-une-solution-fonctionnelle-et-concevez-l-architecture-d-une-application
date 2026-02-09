@@ -16,61 +16,48 @@
   </div>
 </nav>
 
-<main class="main-content-fluid"> 
+<main class="main-content">
   @if (authService.currentUser$ | async; as user) {
-    @if (user.role === 'ROLE_AGENT') {
-      <div class="agent-container">
-        <aside class="sidebar">
-          <div class="sidebar-header">
-            <h3>Messages</h3>
-            <span class="online-status">En ligne</span>
+    <div class="hub-wrapper">
+      <div class="services-grid">
+        <div class="service-card primary" routerLink="/chat">
+          <div class="card-icon">
+            <span class="icon-bg">💬</span>
+            @if (user.role === 'ROLE_AGENT') { <span class="notification-dot">3</span> }
           </div>
-          
-          <div class="conv-list">
-            <div class="conv-item active">
-              <div class="avatar">M</div>
-              <div class="conv-text">
-                <span class="name">Micka (Client)</span>
-                <p class="preview">Bonjour, j'ai besoin d'aide...</p>
-              </div>
-            </div>
+          <div class="card-body">
+            <h3>Chat</h3>
+            <p>Accédez à l'interface de messagerie instantanée pour {{ user.role === 'ROLE_AGENT' ? 'aider nos clients' : 'échanger avec un agent' }}.</p>
           </div>
-        </aside>
-
-        <section class="chat-viewport">
-          <div class="messages-list">
-            <div class="message incoming">
-              <p>Bonjour ! Comment se passe la location ?</p>
-            </div>
-            <div class="message outgoing">
-              <p>Bonjour, tout va bien merci.</p>
-            </div>
-          </div>
-
-          <div class="chat-controls">
-            <input type="text" placeholder="Répondre au client...">
-            <button class="btn-send">Envoyer</button>
-          </div>
-        </section>
-      </div>
-    }
-    @else if (user.role === 'ROLE_USER') {
-      <div class="client-home">
-        <div class="hero-section">
-          <h1>Bienvenue chez YourCarYourWay</h1>
-          <p>Besoin d'aide ou d'informations sur votre réservation ?</p>
-        </div>
-        <div class="chat-trigger-container">
-          <div class="chat-card">
-            <div class="chat-icon">💬</div>
-            <h3>Assistance en direct</h3>
-            <p>Discutez instantanément avec l'un de nos agents.</p>
-            <button class="btn-open-chat">Démarrer la discussion</button>
+          <div class="card-footer">
+            <span class="action-text">Ouvrir l'interface</span>
+            <span class="arrow">→</span>
           </div>
         </div>
+
+        <div class="service-card disabled">
+          <div class="card-icon"><span class="icon-bg">✉️</span></div>
+          <div class="card-body">
+            <h3>Fomulaire de contact</h3>
+            <p>Envoyez des documents ou des demandes complexes par formulaire.</p>
+          </div>
+          <div class="card-footer">
+            <span class="status-label">Indisponible</span>
+          </div>
+        </div>
+
+        <div class="service-card disabled">
+          <div class="card-icon"><span class="icon-bg">📹</span></div>
+          <div class="card-body">
+            <h3>Assistance Visio</h3>
+            <p>Besoin de montrer un dégât sur un véhicule ? Lancez un appel vidéo.</p>
+          </div>
+          <div class="card-footer">
+            <span class="status-label">Indisponible</span>
+          </div>
+        </div>
+
       </div>
-    }
-  } @else {
-    <div class="loading">Initialisation de la session...</div>
+    </div>
   }
 </main>
