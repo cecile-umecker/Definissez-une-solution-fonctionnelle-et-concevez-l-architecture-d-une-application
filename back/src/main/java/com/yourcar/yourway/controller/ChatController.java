@@ -33,18 +33,13 @@ public class ChatController {
 
     @MessageMapping("/chat/{ticketId}/history")
     public void sendHistory(@DestinationVariable Long ticketId, Authentication authentication) {
-        // 1. Récupérer l'historique
         List<ChatMessageDTO> history = chatService.getMessagesByTicketId(ticketId);
-        
-        // 2. Le renvoyer UNIQUEMENT à l'utilisateur qui le demande (via son topic privé ou le topic du ticket)
         messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, history);
     }
 
     @MessageMapping("/chat/{ticketId}/load")
     public void loadHistory(@DestinationVariable Long ticketId) {
         List<ChatMessageDTO> history = chatService.getMessagesByTicketId(ticketId);
-        // On renvoie l'historique sur le topic du ticket
-        // Tous ceux connectés au ticket verront l'historique s'afficher (ou juste toi si on affinait)
         messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, history);
     }
 
