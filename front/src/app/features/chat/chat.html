@@ -13,35 +13,20 @@
 
       <div class="ticket-list">
         @if (user.role === 'ROLE_AGENT') {
-          
           <div class="list-section" [class.collapsed]="!sectionsOpen.unassigned">
             <div class="section-header" (click)="toggleSection('unassigned')">
-              <label>À TRAITER (2)</label>
-              @if (sectionsOpen.unassigned) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              }            
+              <label>À TRAITER</label>
+              <svg [style.transform]="sectionsOpen.unassigned ? 'rotate(0deg)' : 'rotate(-90deg)'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
             @if (sectionsOpen.unassigned) {
               <div class="section-content">
-                <div class="ticket-item" (click)="selectTicket(42)">#42 - Micka</div>
-                <div class="ticket-item" (click)="selectTicket(43)">#43 - Sarah</div>
-              </div>
-            }
-          </div>
-
-          <div class="list-section" [class.collapsed]="!sectionsOpen.mine">
-            <div class="section-header" (click)="toggleSection('mine')">
-              <label>MES CHATS (1)</label>
-              @if (sectionsOpen.mine) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              }             </div>
-            @if (sectionsOpen.mine) {
-              <div class="section-content">
-                <div class="ticket-item" (click)="selectTicket(39)">#39 - Sophie</div>
+                @for (ticket of userTickets; track ticket.id) {
+                  @if (ticket.status) {
+                    <div class="ticket-item" [class.active]="selectedTicketId === ticket.id" (click)="selectTicket(ticket.id)">
+                      #{{ticket.id}} - {{ticket.subject}}
+                    </div>
+                  }
+                }
               </div>
             }
           </div>
@@ -49,15 +34,17 @@
           <div class="list-section" [class.collapsed]="!sectionsOpen.archived">
             <div class="section-header" (click)="toggleSection('archived')">
               <label>ARCHIVES</label>
-              @if (sectionsOpen.archived) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              } 
+              <svg [style.transform]="sectionsOpen.archived ? 'rotate(0deg)' : 'rotate(-90deg)'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
             @if (sectionsOpen.archived) {
               <div class="section-content">
-                <div class="ticket-item archived" (click)="selectTicket(12)">#12 - Jean</div>
+                @for (ticket of userTickets; track ticket.id) {
+                  @if (!ticket.status) {
+                    <div class="ticket-item archived" [class.active]="selectedTicketId === ticket.id" (click)="selectTicket(ticket.id)">
+                      #{{ticket.id}} - {{ticket.subject}}
+                    </div>
+                  }
+                }
               </div>
             }
           </div>
@@ -66,15 +53,17 @@
           <div class="list-section" [class.collapsed]="!sectionsOpen.active">
             <div class="section-header" (click)="toggleSection('active')">
               <label>MES ÉCHANGES EN COURS</label>
-              @if (sectionsOpen.active) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              }
+              <svg [style.transform]="sectionsOpen.active ? 'rotate(0deg)' : 'rotate(-90deg)'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
             @if (sectionsOpen.active) {
               <div class="section-content">
-                <div class="ticket-item" (click)="selectTicket(101)">Ma demande actuelle</div>
+                @for (ticket of userTickets; track ticket.id) {
+                  @if (ticket.status) {
+                    <div class="ticket-item" [class.active]="selectedTicketId === ticket.id" (click)="selectTicket(ticket.id)">
+                      #{{ticket.id}} - {{ticket.subject}}
+                    </div>
+                  }
+                }
               </div>
             }
           </div>
@@ -82,15 +71,17 @@
           <div class="list-section" [class.collapsed]="!sectionsOpen.closedClient">
             <div class="section-header" (click)="toggleSection('closedClient')">
               <label>HISTORIQUE (CLOS)</label>
-              @if (sectionsOpen.closedClient) {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-              }
+              <svg [style.transform]="sectionsOpen.closedClient ? 'rotate(0deg)' : 'rotate(-90deg)'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
             @if (sectionsOpen.closedClient) {
               <div class="section-content">
-                <div class="ticket-item archived" (click)="selectTicket(99)">Chat du 05/02/2026</div>
+                @for (ticket of userTickets; track ticket.id) {
+                  @if (!ticket.status) {
+                    <div class="ticket-item archived" [class.active]="selectedTicketId === ticket.id" (click)="selectTicket(ticket.id)">
+                      #{{ticket.id}} - {{ticket.subject}}
+                    </div>
+                  }
+                }
               </div>
             }
           </div>
@@ -144,6 +135,5 @@
         </div>
       }
     </main>
-
   }
 </div>

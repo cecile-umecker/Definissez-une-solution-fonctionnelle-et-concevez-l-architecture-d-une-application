@@ -1,13 +1,17 @@
 package com.yourcar.yourway.controller;
 
+import com.yourcar.yourway.dto.TicketListDTO;
 import com.yourcar.yourway.model.SupportTicket;
 import com.yourcar.yourway.model.User;
 import com.yourcar.yourway.repository.SupportTicketRepository;
 import com.yourcar.yourway.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -34,5 +38,30 @@ public class SupportTicketController {
         ticket.setCreatedAt(LocalDateTime.now());
 
         return ticketRepository.save(ticket);
+    }
+
+    @GetMapping("/my")
+    public List<TicketListDTO> getMyTickets(Authentication authentication) {
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        return ticketRepository.findByUserIdOrderByCreatedAtDesc(user.getId())
+                .stream()
+                .map(t -> new TicketListDTO(t.getId(), t.getSubject(), t.getStatus(), t.getCreatedAt()))
+                .toList();
+    }
+
+    @GetMapping("/all")
+    public List<TicketListDTO> getAllTickets() {
+        // On transforme les entités en DTO pour que l'Agent ait le même format que le Client
+        return ticketRepository.findAll().stream()
+                .map(t -> new TicketListDTO(
+                    t.getId(), 
+                    t.getSubject(), 
+                    t.getStatus(), 
+                    t.getCreatedAt()
+                ))
+                .toList();
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,5 +45,19 @@ public class ChatService {
         dto.setId(saved.getId());
         dto.setTimestamp(saved.getTimestamp().toString());
         return dto;
+    }
+
+    public List<ChatMessageDTO> getMessagesByTicketId(Long ticketId) {
+        return messageRepository.findByTicketIdOrderByTimestampAsc(ticketId)
+            .stream()
+            .map(msg -> {
+                ChatMessageDTO dto = new ChatMessageDTO();
+                dto.setId(msg.getId());
+                dto.setText(msg.getContent()); // On utilise msg.getContent()
+                dto.setSenderId(msg.getSender().getId()); // On utilise msg.getSender()
+                dto.setTimestamp(msg.getTimestamp().toString());
+                return dto;
+            })
+            .collect(Collectors.toList());
     }
 }
