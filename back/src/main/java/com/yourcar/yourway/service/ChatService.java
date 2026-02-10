@@ -42,7 +42,6 @@ public class ChatService {
         
         dto.setId(saved.getId());
         dto.setTimestamp(saved.getTimestamp().toString());
-        
         return dto;
     }
 }

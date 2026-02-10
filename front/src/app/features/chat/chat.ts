@@ -1,23 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../service/auth-service';
+import { ChatService } from '../../service/chat-service'; // Ajuste le chemin
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms'; // Indispensable pour le champ texte
+import { Subscription } from 'rxjs';
+import { TicketService } from '../../service/ticket-service';
 
 @Component({
   selector: 'app-chat',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
 })
-export class Chat {
+export class Chat implements OnInit, OnDestroy {
   selectedTicketId: number | null = null;
+  newMessageText: string = '';
+  activeMessages: any[] = [];
+  private chatSubscription?: Subscription;
   isClosed = false;
-  activeMessages = [
-    { id: 1, senderId: 1, text: "Bonjour, j'ai un problème avec ma réservation.", timestamp: '10:42' },
-    { id: 2, senderId: 3, text: "Bonjour ! Je regarde ça tout de suite. Quel est votre numéro de dossier ?", timestamp: '10:43' },
-    { id: 3, senderId: 1, text: "C'est le YourCar-789.", timestamp: '10:44' }
-  ];
   sectionsOpen = {
     unassigned: true,
     mine: true,
@@ -26,23 +28,66 @@ export class Chat {
     closedClient: false
   };
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private chatService: ChatService,
+    private ticketService: TicketService 
+  ) {}
+
+  ngOnInit(): void {
+    this.chatSubscription = this.chatService.messages$.subscribe(messages => {
+      this.activeMessages = messages;
+      if (messages.length > 0) {
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg.ticketStatus !== undefined) {
+          this.isClosed = !lastMsg.ticketStatus; 
+        }
+      }
+    });
+  }
+
+  selectTicket(id: number) {
+    this.selectedTicketId = id;
+    this.chatService.disconnect(); 
+    this.chatService.connect(id);
+  }
+
+  sendMessage() {
+    if (this.isClosed) return; // Sécurité supplémentaire
+
+    this.authService.currentUser$.subscribe(user => {
+      if (user && this.selectedTicketId && this.newMessageText.trim()) {
+        this.chatService.sendMessage(this.selectedTicketId, user.id, this.newMessageText);
+        this.newMessageText = '';
+      }
+    }).unsubscribe();
+  }
+
+  isMyMessage(messageAuthorId: number): boolean {
+    return messageAuthorId === this.authService.getUserValue().id;
+  }
+
+  ngOnDestroy(): void {
+    this.chatService.disconnect();
+    this.chatSubscription?.unsubscribe();
+  }
 
   toggleSection(section: 'unassigned' | 'mine' | 'archived' | 'active' | 'closedClient') {
     this.sectionsOpen[section] = !this.sectionsOpen[section];
   }
 
-  selectTicket(id: number) {
-    this.selectedTicketId = id;
-  }
-
   createNewTicket() {
-    console.log("Création d'un nouveau ticket...");
-    // Plus tard : appel API
+    const subject = prompt("Quel est l'objet de votre demande ?");
+    
+    if (subject) {
+      this.authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.ticketService.createTicket(user.id, subject).subscribe(newTicket => {
+            console.log("Ticket créé avec l'ID :", newTicket.id);
+            this.selectTicket(newTicket.id);
+          });
+        }
+      }).unsubscribe();
+    }
   }
-
-  // Dans chat.component.ts
-isMyMessage(messageAuthorId: number, currentUserId: number): boolean {
-  return messageAuthorId === currentUserId;
-}
 }

@@ -11,4 +11,5 @@ public class ChatMessageDTO {
     private String text;
     private Long senderId;
     private String timestamp;
+    private Boolean ticketStatus;
 }

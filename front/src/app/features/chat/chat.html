@@ -124,9 +124,17 @@
         </div>
 
         <footer class="chat-input-area">
-          <input type="text" placeholder="Écrivez votre message ici..." [disabled]="isClosed">
-          <button class="btn-send">
-            <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+          <input 
+            type="text" 
+            placeholder="Écrivez votre message ici..." 
+            [disabled]="isClosed"
+            [(ngModel)]="newMessageText" 
+            (keyup.enter)="sendMessage()">
+          
+          <button class="btn-send" (click)="sendMessage()">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+            </svg>
           </button>
         </footer>
       } @else {
