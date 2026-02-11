@@ -7,6 +7,10 @@ import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { TicketService } from '../../service/ticket-service';
 
+/**
+ * Real-time chat component for support tickets.
+ * Manages WebSocket connections, message display, ticket selection, and lifecycle.
+ */
 @Component({
   selector: 'app-chat',
   standalone: true,
@@ -42,6 +46,7 @@ export class Chat implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef 
   ) {}
 
+  // Initialize component and subscribe to chat messages and ticket events
   ngOnInit(): void {
     this.loadTickets();
     
@@ -71,6 +76,7 @@ export class Chat implements OnInit, OnDestroy {
     });
   }
 
+  // Load user tickets from backend
   loadTickets() {
     this.ticketsSubscription?.unsubscribe();
 
@@ -89,6 +95,7 @@ export class Chat implements OnInit, OnDestroy {
     });
   }
 
+  // Connect to specific ticket chat via WebSocket
   selectTicket(id: number) {
     if (this.selectedTicketId === id) return;
 
@@ -100,6 +107,7 @@ export class Chat implements OnInit, OnDestroy {
     this.chatService.connect(id);
   }
 
+  // Send new message through WebSocket
   sendMessage() {
     if (this.isClosed) return;
 
@@ -114,6 +122,7 @@ export class Chat implements OnInit, OnDestroy {
     }
   }
 
+  // Auto-scroll to latest message
   private scrollToBottom() {
     const container = document.querySelector('.messages-container');
     if (container) {
@@ -121,11 +130,12 @@ export class Chat implements OnInit, OnDestroy {
     }
   }
 
+  // Check if message was sent by current user
   isMyMessage(messageAuthorId: number): boolean {
     return messageAuthorId === this.authService.getUserValue()?.id;
   }
 
-  // NETTOYAGE COMPLET
+  // Cleanup: disconnect WebSocket and unsubscribe from all observables
   ngOnDestroy(): void {
     console.log("Destruction du composant Chat : nettoyage des abonnements.");
     this.chatService.disconnect(); // Déconnexion physique WS
@@ -136,10 +146,12 @@ export class Chat implements OnInit, OnDestroy {
     this.actionSubscription?.unsubscribe();
   }
 
+  // Toggle sidebar section visibility
   toggleSection(section: keyof typeof this.sectionsOpen) {
     this.sectionsOpen[section] = !this.sectionsOpen[section];
   }
 
+  // Create new support ticket
   createNewTicket() {
     const subject = prompt("Quel est l'objet de votre demande ?");
     if (subject) {
@@ -153,6 +165,7 @@ export class Chat implements OnInit, OnDestroy {
     }
   }
 
+  // Close current ticket
   closeTicket() {
     if (this.selectedTicketId) {
       this.actionSubscription = this.ticketService.closeTicket(this.selectedTicketId).subscribe({

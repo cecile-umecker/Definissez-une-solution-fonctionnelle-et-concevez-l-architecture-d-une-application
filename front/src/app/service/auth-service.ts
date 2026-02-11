@@ -2,6 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, catchError, of, BehaviorSubject } from 'rxjs';
 
+/**
+ * Service for user authentication with cookie-based JWT tokens.
+ * Manages login, logout, and current user state.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -12,6 +16,7 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<any | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
+  // Authenticate user and store session
   login(credentials: any): Observable<any> {
     return this.http.post(`${this.API_URL}/login`, credentials, {
       withCredentials: true 
@@ -22,6 +27,7 @@ export class AuthService {
     );
   }
 
+  // Verify authentication status by fetching current user
   checkAuth(): Observable<any> {
     return this.http.get(`${this.API_URL}/me`, { withCredentials: true }).pipe(
       tap(user => this.currentUserSubject.next(user)),
@@ -32,14 +38,17 @@ export class AuthService {
     );
   }
 
+  // Check if user is currently authenticated
   isLoggedIn(): boolean {
     return this.currentUserSubject.value !== null;
   }
 
+  // Get current user value synchronously
   getUserValue() {
     return this.currentUserSubject.value;
   }
 
+  // Log out user and clear session
   logout(): Observable<any> {
     return this.http.post(`${this.API_URL}/logout`, {}, { withCredentials: true }).pipe(
       tap(() => {

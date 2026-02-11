@@ -4,6 +4,10 @@ import { Client, Message, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
+/**
+ * Service for WebSocket-based real-time chat communication.
+ * Manages STOMP connections, message subscriptions, and ticket events.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -20,6 +24,7 @@ export class ChatService {
 
   constructor(private http: HttpClient) { }
 
+  // Connect to WebSocket and subscribe to ticket chat and events
   connect(ticketId: number): void {
     if (this.stompClient) {
       this.disconnect();
@@ -78,6 +83,7 @@ export class ChatService {
     this.stompClient.activate();
   }
 
+  // Disconnect from WebSocket and clean up subscriptions
   disconnect(): void {
     if (this.currentSubscription) {
       this.currentSubscription.unsubscribe();
@@ -95,6 +101,7 @@ export class ChatService {
     this.ticketEventSubject.next(null);
   }
 
+  // Send message to specific ticket chat
   sendMessage(ticketId: number, senderId: number, text: string): void {
     if (this.stompClient && this.stompClient.connected) {
       const chatMessage = { text: text, senderId: senderId };
@@ -105,6 +112,7 @@ export class ChatService {
     }
   }
 
+  // Load chat history for a ticket
   loadHistory(ticketId: number) {
     if (this.stompClient && this.stompClient.connected) {
       this.stompClient.publish({
