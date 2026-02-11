@@ -8,6 +8,7 @@ import com.yourcar.yourway.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +19,7 @@ public class SupportTicketService {
 
     private final SupportTicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     public List<TicketListDTO> getAllTickets() {
         return ticketRepository.findAll().stream()
@@ -54,7 +56,10 @@ public class SupportTicketService {
                 .orElseThrow(() -> new RuntimeException("Ticket non trouvé"));
         ticket.setStatus(false);
         ticketRepository.save(ticket);
-    }
+
+        TicketStatusNotification notification = new TicketStatusNotification("TICKET_CLOSED", ticketId);
+
+        messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, notification);    }
 
     // Le mapper SOLID : centralisé et réutilisable
     private TicketListDTO mapToDTO(SupportTicket ticket) {
@@ -65,4 +70,6 @@ public class SupportTicketService {
                 ticket.getCreatedAt()
         );
     }
+
+    public record TicketStatusNotification(String type, Long ticketId) {}
 }

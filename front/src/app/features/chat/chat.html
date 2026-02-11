@@ -95,8 +95,8 @@
           <div class="ticket-info">
             <h3>Discussion #{{selectedTicketId}}</h3>
           </div>
-          @if (user.role === 'ROLE_AGENT') {
-            <button class="btn-close-ticket">Fermer le ticket</button>
+          @if (user.role === 'ROLE_AGENT' && !isClosed) {
+            <button class="btn-close-ticket" (click)="closeTicket()">Fermer le ticket</button>
           }
         </header>
 
@@ -122,7 +122,7 @@
             [(ngModel)]="newMessageText" 
             (keyup.enter)="sendMessage()">
           
-          <button class="btn-send" (click)="sendMessage()">
+          <button class="btn-send" (click)="sendMessage()" [disabled]="isClosed">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
             </svg>

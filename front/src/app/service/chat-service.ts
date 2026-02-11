@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import SockJS from 'sockjs-client';
-import { Client, Message, StompSubscription } from '@stomp/stompjs'; // Ajout de StompSubscription
+import { Client, Message, StompSubscription } from '@stomp/stompjs';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 
@@ -9,15 +9,18 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ChatService {
   private stompClient: Client | null = null;
-  private currentSubscription: StompSubscription | null = null; // 👈 Stocke l'abonnement au ticket
+  private currentSubscription: StompSubscription | null = null;
   
   private messagesSubject = new BehaviorSubject<any[]>([]);
   public messages$ = this.messagesSubject.asObservable();
 
+  // Flux pour les événements de statut (fermeture, etc.)
+  private ticketEventSubject = new BehaviorSubject<any>(null);
+  public ticketEvent$ = this.ticketEventSubject.asObservable();
+
   constructor(private http: HttpClient) { }
 
   connect(ticketId: number): void {
-    // 1. Si un client existe déjà, on le désactive pour repartir sur du propre
     if (this.stompClient) {
       this.disconnect();
     }
@@ -32,29 +35,31 @@ export class ChatService {
 
     this.stompClient.onConnect = (frame) => {
       console.log('Connecté au serveur STOMP');
-
-      // 2. On s'assure que le Subject est vide avant de charger le nouveau ticket
       this.messagesSubject.next([]);
+      this.ticketEventSubject.next(null); // Reset l'état de l'événement
 
-      // 3. On s'abonne au topic du ticket et on stocke la subscription
       this.currentSubscription = this.stompClient!.subscribe(`/topic/ticket/${ticketId}`, (message: Message) => {
         if (message.body) {
           const data = JSON.parse(message.body);
           
-          // GESTION DOUBLE : Historique (Array) ou Message seul (Object)
+          // 1. INTERCEPTION DU SIGNAL DE FERMETURE
+          if (data.type === 'TICKET_CLOSED') {
+            console.log('Signal de fermeture reçu via WebSocket');
+            this.ticketEventSubject.next({ type: 'CLOSED', id: ticketId });
+            return; // On s'arrête ici pour ne pas ajouter ce JSON dans les messages
+          }
+
+          // 2. GESTION DES MESSAGES CLASSIQUES
           if (Array.isArray(data)) {
-            // Si c'est un historique, on remplace tout (en aplatissant si besoin)
             const history = Array.isArray(data[0]) ? data[0] : data;
             this.messagesSubject.next(history);
           } else {
-            // Si c'est un message seul, on l'ajoute à la liste
             const currentMessages = this.messagesSubject.getValue();
             this.messagesSubject.next([...currentMessages, data]);
           }
         }
       });
 
-      // 4. Une fois connecté, on demande automatiquement l'historique
       this.loadHistory(ticketId);
     };
 
@@ -75,7 +80,6 @@ export class ChatService {
     }
   }
 
-  // Cette méthode ferme TOUT (utile quand on quitte la page chat)
   disconnect(): void {
     if (this.currentSubscription) {
       this.currentSubscription.unsubscribe();
@@ -85,7 +89,8 @@ export class ChatService {
       this.stompClient.deactivate();
       this.stompClient = null;
     }
-    this.messagesSubject.next([]); // On vide pour le prochain affichage
+    this.messagesSubject.next([]);
+    this.ticketEventSubject.next(null);
   }
 
   loadHistory(ticketId: number) {

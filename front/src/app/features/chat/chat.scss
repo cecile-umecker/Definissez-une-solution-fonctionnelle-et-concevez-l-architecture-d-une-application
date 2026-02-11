@@ -137,6 +137,18 @@
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
         &:hover { background: #1d4ed8; }
+        &:disabled {
+          background-color: #cccccc; // Gris clair
+          color: #666666;            // Texte/Icône gris foncé
+          cursor: not-allowed;       // Curseur "interdit"
+          opacity: 0.7;              // Un peu de transparence
+          border-color: #bbbbbb;
+          
+          // Si tu as un SVG à l'intérieur, on le grise aussi
+          svg {
+            fill: #888888;
+          }
+        }
       }
     }
 

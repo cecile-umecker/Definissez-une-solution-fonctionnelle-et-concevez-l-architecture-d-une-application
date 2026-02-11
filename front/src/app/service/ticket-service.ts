@@ -29,4 +29,9 @@ export class TicketService {
     // Sinon on reste sur /my
     return this.http.get<any[]>(`${this.API_URL}/my`, { withCredentials: true });
   }
+
+  closeTicket(ticketId: number): Observable<any> {
+    // On utilise PUT car on modifie l'état d'une ressource existante
+    return this.http.put(`${this.API_URL}/${ticketId}/close`, {}, { withCredentials: true });
+  }
 }
