@@ -1,6 +1,6 @@
 .chat-container {
   display: flex;
-  height: calc(100vh - 64px); // On déduit la hauteur de la navbar
+  height: calc(100vh - 64px);
   background: #f9fafb;
   overflow: hidden;
 
@@ -64,7 +64,7 @@
     }
   }
 
-  // ZONE DE CHAT
+  // CHAT
   .chat-window {
     flex: 1;
     display: flex;
@@ -138,13 +138,12 @@
         cursor: pointer;
         &:hover { background: #1d4ed8; }
         &:disabled {
-          background-color: #cccccc; // Gris clair
-          color: #666666;            // Texte/Icône gris foncé
-          cursor: not-allowed;       // Curseur "interdit"
-          opacity: 0.7;              // Un peu de transparence
+          background-color: #cccccc; 
+          color: #666666;            
+          cursor: not-allowed;       
+          opacity: 0.7;              
           border-color: #bbbbbb;
           
-          // Si tu as un SVG à l'intérieur, on le grise aussi
           svg {
             fill: #888888;
           }
@@ -184,7 +183,7 @@
     color: #6b7280;
     letter-spacing: 0.05em;
     cursor: pointer;
-    user-select: none; // Pour éviter de sélectionner le texte en cliquant vite
+    user-select: none; 
   }
 
   .icon-wrapper {
@@ -194,12 +193,11 @@
     transition: transform 0.2s ease;
     
     svg {
-      display: block; // Évite les décalages d'alignement
+      display: block; 
     }
   }
 }
 
-// Optionnel : si tu veux une micro-animation quand on clique
 .list-section.collapsed {
   .section-header {
     background: transparent;
@@ -210,7 +208,7 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
-  max-width: 70%; // Limite la largeur des bulles
+  max-width: 70%; 
 
   .bubble { 
     padding: 0.75rem 1rem; 
@@ -225,10 +223,9 @@
     margin-top: 4px; 
   }
 
-  // Ce qui est "Envoyé" par l'utilisateur actuel (Droite + Bleu)
   &.sent {
-    align-self: flex-end; // Aligne le bloc entier à droite
-    align-items: flex-end; // Aligne le texte/time à droite
+    align-self: flex-end; 
+    align-items: flex-end; 
     
     .bubble {
       background: #2563eb; 
@@ -237,10 +234,9 @@
     }
   }
 
-  // Ce qui est "Reçu" par l'utilisateur actuel (Gauche + Gris)
   &.received {
-    align-self: flex-start; // Aligne le bloc entier à gauche
-    align-items: flex-start; // Aligne le texte/time à gauche
+    align-self: flex-start; 
+    align-items: flex-start; 
     
     .bubble {
       background: #f3f4f6; 

@@ -47,7 +47,17 @@ public class SupportTicketService {
         ticket.setStatus(true);
         ticket.setCreatedAt(LocalDateTime.now());
 
-        return ticketRepository.save(ticket);
+        SupportTicket saved = ticketRepository.save(ticket);
+
+        TicketStatusNotification notification = new TicketStatusNotification("TICKET_CREATED", saved.getId());
+    
+        try {
+            messagingTemplate.convertAndSend("/topic/tickets/new", notification);
+        } catch (Exception e) {
+            System.err.println("Erreur envoi WS création: " + e.getMessage());
+        }
+
+        return saved;
     }
 
     @Transactional
@@ -61,7 +71,6 @@ public class SupportTicketService {
 
         messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, notification);    }
 
-    // Le mapper SOLID : centralisé et réutilisable
     private TicketListDTO mapToDTO(SupportTicket ticket) {
         return new TicketListDTO(
                 ticket.getId(),

@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AuthService } from './auth-service'; // Vérifie le chemin de ton auth service
+import { AuthService } from './auth-service'; 
 
 @Injectable({
   providedIn: 'root',
 })
 export class TicketService {
   private http = inject(HttpClient);
-  private authService = inject(AuthService); // 👈 On injecte l'auth pour checker le rôle
+  private authService = inject(AuthService); 
   private readonly API_URL = 'http://localhost:8080/api/tickets';
 
   createTicket(userId: number, subject: string): Observable<any> {
@@ -21,17 +21,14 @@ export class TicketService {
   getUserTickets(): Observable<any[]> {
     const user = this.authService.getUserValue();
     
-    // Si c'est un agent, on appelle ton endpoint /all
     if (user && user.role === 'ROLE_AGENT') {
       return this.http.get<any[]>(`${this.API_URL}/all`, { withCredentials: true });
     }
 
-    // Sinon on reste sur /my
     return this.http.get<any[]>(`${this.API_URL}/my`, { withCredentials: true });
   }
 
   closeTicket(ticketId: number): Observable<any> {
-    // On utilise PUT car on modifie l'état d'une ressource existante
     return this.http.put(`${this.API_URL}/${ticketId}/close`, {}, { withCredentials: true });
   }
 }

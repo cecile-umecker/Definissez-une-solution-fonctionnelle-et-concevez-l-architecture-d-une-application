@@ -23,7 +23,6 @@ export class Login {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      // On récupère les valeurs typées
       const credentials = this.loginForm.getRawValue();
       
       this.authService.login(credentials).subscribe({

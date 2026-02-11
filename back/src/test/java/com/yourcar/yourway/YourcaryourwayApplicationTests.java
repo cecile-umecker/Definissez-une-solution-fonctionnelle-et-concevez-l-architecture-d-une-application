@@ -10,20 +10,16 @@ class YourcaryourwayApplicationTests {
 
     @BeforeAll
     static void setup() {
-        // On cherche le .env de manière plus flexible
         Dotenv dotenv = Dotenv.configure()
-                .directory("./") // Tente la racine du dossier courant
+                .directory("./")
                 .ignoreIfMissing()
                 .load();
 
-        // On injecte les variables
         dotenv.entries().forEach(entry -> {
             System.setProperty(entry.getKey(), entry.getValue());
-            // Ligne de debug (optionnelle, à retirer après)
             System.out.println("Test Env Load: " + entry.getKey());
         });
         
-        // Vérification critique pour t'aider à diagnostiquer
         if (System.getProperty("DB_URL") == null) {
             System.err.println("ALERTE : DB_URL n'est pas chargée ! Vérifie l'emplacement de ton .env");
         }
@@ -31,6 +27,5 @@ class YourcaryourwayApplicationTests {
 
     @Test
     void contextLoads() {
-        // Si ça arrive ici, c'est que la DB est connectée
     }
 }

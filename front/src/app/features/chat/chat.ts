@@ -41,14 +41,12 @@ export class Chat implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadTickets();
     
-    // 1. Abonnement aux nouveaux messages
     this.chatSubscription = this.chatService.messages$.subscribe((messages: any[]) => {
       this.activeMessages = messages;
       this.cdr.detectChanges();
       setTimeout(() => this.scrollToBottom(), 100);
     });
 
-    // 2. Gestion des signaux WebSocket avec micro-délai pour la synchro DB
     this.statusSubscription = this.chatService.ticketEvent$.subscribe(event => {
       if (event) {
         console.log(`Signal WebSocket reçu: ${event.type}`);
@@ -57,12 +55,11 @@ export class Chat implements OnInit, OnDestroy {
           this.isClosed = true;
         }
         
-        // 👈 Correction : On attend que le backend ait fini de commit avant de recharger
-        if (event.type === 'CLOSED' || event.type === 'ASSIGNED') {
+        if (event.type === 'CLOSED' || event.type === 'ASSIGNED' || event.type === 'CREATED') {
           setTimeout(() => {
             console.log("Rechargement des tickets après signal...");
             this.loadTickets();
-          }, 300); // 300ms suffisent généralement
+          }, 300); 
         }
         
         this.cdr.detectChanges();
@@ -73,7 +70,6 @@ export class Chat implements OnInit, OnDestroy {
   loadTickets() {
     this.ticketService.getUserTickets().subscribe({
       next: (data) => {
-        // On force une nouvelle référence de tableau pour déclencher le rafraîchissement Angular
         this.userTickets = [...data];
         console.log("Tickets mis à jour dans la sidebar:", this.userTickets);
         

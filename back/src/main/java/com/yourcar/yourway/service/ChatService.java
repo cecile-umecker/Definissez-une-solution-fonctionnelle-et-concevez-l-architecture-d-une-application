@@ -9,7 +9,7 @@ import com.yourcar.yourway.repository.SupportTicketRepository;
 import com.yourcar.yourway.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.SimpMessagingTemplate; // 👈 Ajout import
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +38,8 @@ public class ChatService {
             System.out.println("Assignation de l'agent " + sender.getId() + " au ticket " + ticketId);
             ticket.setAgent(sender);
             
-            // On force la sauvegarde du ticket immédiatement
             ticketRepository.saveAndFlush(ticket); 
 
-            // Notification WebSocket
             TicketEventNotification event = new TicketEventNotification("TICKET_ASSIGNED", ticketId, sender.getId());
             messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, event);
         }

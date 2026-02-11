@@ -16,7 +16,6 @@ export class Home implements OnInit {
   authService = inject(AuthService);
 
   ngOnInit() {
-    // On récupère les infos de Micka dès qu'on arrive ici
     this.authService.checkAuth().subscribe();
   }
 }

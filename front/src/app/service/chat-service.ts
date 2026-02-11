@@ -10,11 +10,11 @@ import { HttpClient } from '@angular/common/http';
 export class ChatService {
   private stompClient: Client | null = null;
   private currentSubscription: StompSubscription | null = null;
+  private globalSubscription: StompSubscription | null = null;
   
   private messagesSubject = new BehaviorSubject<any[]>([]);
   public messages$ = this.messagesSubject.asObservable();
 
-  // Flux pour les événements de statut (fermeture, attribution, etc.)
   private ticketEventSubject = new BehaviorSubject<any>(null);
   public ticketEvent$ = this.ticketEventSubject.asObservable();
 
@@ -36,27 +36,32 @@ export class ChatService {
     this.stompClient.onConnect = (frame) => {
       console.log('Connecté au serveur STOMP');
       this.messagesSubject.next([]);
-      this.ticketEventSubject.next(null); // Reset l'état de l'événement
+      this.ticketEventSubject.next(null);
+
+      this.globalSubscription = this.stompClient!.subscribe('/topic/tickets/new', (message: Message) => {
+        if (message.body) {
+          const data = JSON.parse(message.body);
+          if (data.type === 'TICKET_CREATED') {
+            console.log('Alerte : Nouveau ticket créé en base !');
+            this.ticketEventSubject.next({ type: 'CREATED' });
+          }
+        }
+      });
 
       this.currentSubscription = this.stompClient!.subscribe(`/topic/ticket/${ticketId}`, (message: Message) => {
         if (message.body) {
           const data = JSON.parse(message.body);
           
-          // 1. INTERCEPTION DU SIGNAL DE FERMETURE
           if (data.type === 'TICKET_CLOSED') {
-            console.log('Signal de fermeture reçu via WebSocket');
             this.ticketEventSubject.next({ type: 'CLOSED', id: ticketId });
             return;
           }
 
-          // 1bis. 👈 INTERCEPTION DU SIGNAL D'ATTRIBUTION
           if (data.type === 'TICKET_ASSIGNED') {
-            console.log('Signal d\'attribution reçu via WebSocket');
             this.ticketEventSubject.next({ type: 'ASSIGNED', id: ticketId, agentId: data.agentId });
-            return; // On ne veut pas l'afficher comme un message de chat
+            return;
           }
 
-          // 2. GESTION DES MESSAGES CLASSIQUES
           if (Array.isArray(data)) {
             const history = Array.isArray(data[0]) ? data[0] : data;
             this.messagesSubject.next(history);
@@ -73,24 +78,14 @@ export class ChatService {
     this.stompClient.activate();
   }
 
-  sendMessage(ticketId: number, senderId: number, text: string): void {
-    if (this.stompClient && this.stompClient.connected) {
-      const chatMessage = {
-        text: text,
-        senderId: senderId
-      };
-      
-      this.stompClient.publish({
-        destination: `/app/chat/${ticketId}`,
-        body: JSON.stringify(chatMessage)
-      });
-    }
-  }
-
   disconnect(): void {
     if (this.currentSubscription) {
       this.currentSubscription.unsubscribe();
       this.currentSubscription = null;
+    }
+    if (this.globalSubscription) {
+      this.globalSubscription.unsubscribe();
+      this.globalSubscription = null;
     }
     if (this.stompClient) {
       this.stompClient.deactivate();
@@ -98,6 +93,16 @@ export class ChatService {
     }
     this.messagesSubject.next([]);
     this.ticketEventSubject.next(null);
+  }
+
+  sendMessage(ticketId: number, senderId: number, text: string): void {
+    if (this.stompClient && this.stompClient.connected) {
+      const chatMessage = { text: text, senderId: senderId };
+      this.stompClient.publish({
+        destination: `/app/chat/${ticketId}`,
+        body: JSON.stringify(chatMessage)
+      });
+    }
   }
 
   loadHistory(ticketId: number) {

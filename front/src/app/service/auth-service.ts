@@ -9,7 +9,6 @@ export class AuthService {
   private http = inject(HttpClient);
   private readonly API_URL = 'http://localhost:8080/api/auth';
 
-  // On reste sur le BehaviorSubject qui fonctionne bien
   private currentUserSubject = new BehaviorSubject<any | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
@@ -23,7 +22,6 @@ export class AuthService {
     );
   }
 
-  // On corrige ici : on utilise .next() au lieu de .set()
   checkAuth(): Observable<any> {
     return this.http.get(`${this.API_URL}/me`, { withCredentials: true }).pipe(
       tap(user => this.currentUserSubject.next(user)),
@@ -38,7 +36,6 @@ export class AuthService {
     return this.currentUserSubject.value !== null;
   }
 
-  // Petite méthode pour récupérer facilement la valeur actuelle (pour le prénom)
   getUserValue() {
     return this.currentUserSubject.value;
   }
@@ -46,12 +43,10 @@ export class AuthService {
   logout(): Observable<any> {
     return this.http.post(`${this.API_URL}/logout`, {}, { withCredentials: true }).pipe(
       tap(() => {
-        // On vide l'utilisateur dans l'application
         this.currentUserSubject.next(null);
         console.log('Déconnexion réussie');
       }),
       catchError((err) => {
-        // Même en cas d'erreur serveur, on vide le local pour débloquer l'UI
         this.currentUserSubject.next(null);
         return of(null);
       })

@@ -47,7 +47,7 @@ public class AuthService {
         
         return ResponseCookie.from("jwt", jwt)
                 .httpOnly(true)
-                .secure(false) // À mettre à true en prod
+                .secure(false)
                 .path("/")
                 .maxAge(24 * 60 * 60)
                 .sameSite("Strict")
