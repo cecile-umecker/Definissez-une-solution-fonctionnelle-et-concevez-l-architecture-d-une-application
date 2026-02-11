@@ -109,7 +109,7 @@
               <div class="bubble">
                 {{ msg.text }}
               </div>
-              <span class="time">{{ msg.timestamp }}</span>
+              <span class="time">{{ msg.timestamp | date: 'HH:mm' }}</span>
             </div>
           }
         </div>
