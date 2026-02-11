@@ -64,6 +64,10 @@ export class Chat implements OnInit, OnDestroy {
     this.ticketService.getUserTickets().subscribe({
       next: (data) => {
         this.userTickets = [...data];
+        if (this.userTickets.some(t => t.status)) {
+          this.sectionsOpen.active = true;
+          this.sectionsOpen.unassigned = true;
+        }
         this.cdr.detectChanges();
       },
       error: (err) => console.error("Erreur chargement tickets", err)
