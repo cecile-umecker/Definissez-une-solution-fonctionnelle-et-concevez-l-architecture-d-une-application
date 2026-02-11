@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AuthService } from '../../service/auth-service';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs/internal/Subscription';
 
 @Component({
   selector: 'app-home',
@@ -11,11 +12,15 @@ import { RouterLink } from '@angular/router';
   styleUrl: './home.scss',
 })
 
-export class Home implements OnInit {
-
+export class Home implements OnInit, OnDestroy {
   authService = inject(AuthService);
+  private authSub?: Subscription; 
 
   ngOnInit() {
-    this.authService.checkAuth().subscribe();
+    this.authSub = this.authService.checkAuth().subscribe();
+  }
+
+  ngOnDestroy() {
+    this.authSub?.unsubscribe(); 
   }
 }

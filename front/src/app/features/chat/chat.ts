@@ -18,8 +18,12 @@ export class Chat implements OnInit, OnDestroy {
   selectedTicketId: number | null = null;
   newMessageText: string = '';
   activeMessages: any[] = [];
+  
   private chatSubscription?: Subscription;
   private statusSubscription?: Subscription;
+  private ticketsSubscription?: Subscription;
+  private actionSubscription?: Subscription; 
+
   isClosed = false;
 
   sectionsOpen = {
@@ -68,7 +72,9 @@ export class Chat implements OnInit, OnDestroy {
   }
 
   loadTickets() {
-    this.ticketService.getUserTickets().subscribe({
+    this.ticketsSubscription?.unsubscribe();
+
+    this.ticketsSubscription = this.ticketService.getUserTickets().subscribe({
       next: (data) => {
         this.userTickets = [...data];
         console.log("Tickets mis à jour dans la sidebar:", this.userTickets);
@@ -89,11 +95,7 @@ export class Chat implements OnInit, OnDestroy {
     this.selectedTicketId = id;
 
     const currentTicket = this.userTickets.find(t => t.id === id);
-    if (currentTicket) {
-      this.isClosed = !currentTicket.status;
-    } else {
-      this.isClosed = false;
-    }
+    this.isClosed = currentTicket ? !currentTicket.status : false;
 
     this.chatService.connect(id);
   }
@@ -105,7 +107,10 @@ export class Chat implements OnInit, OnDestroy {
     if (user && this.selectedTicketId && this.newMessageText.trim()) {
       this.chatService.sendMessage(this.selectedTicketId, user.id, this.newMessageText);
       this.newMessageText = ''; 
-      setTimeout(() => document.querySelector('input')?.focus(), 50);
+      setTimeout(() => {
+        const input = document.querySelector('input');
+        if (input) (input as HTMLElement).focus();
+      }, 50);
     }
   }
 
@@ -120,10 +125,15 @@ export class Chat implements OnInit, OnDestroy {
     return messageAuthorId === this.authService.getUserValue()?.id;
   }
 
+  // NETTOYAGE COMPLET
   ngOnDestroy(): void {
-    this.chatService.disconnect();
+    console.log("Destruction du composant Chat : nettoyage des abonnements.");
+    this.chatService.disconnect(); // Déconnexion physique WS
+    
     this.chatSubscription?.unsubscribe();
     this.statusSubscription?.unsubscribe();
+    this.ticketsSubscription?.unsubscribe();
+    this.actionSubscription?.unsubscribe();
   }
 
   toggleSection(section: keyof typeof this.sectionsOpen) {
@@ -135,7 +145,7 @@ export class Chat implements OnInit, OnDestroy {
     if (subject) {
       const user = this.authService.getUserValue();
       if (user) {
-        this.ticketService.createTicket(user.id, subject).subscribe(newTicket => {
+        this.actionSubscription = this.ticketService.createTicket(user.id, subject).subscribe(newTicket => {
           this.loadTickets();
           this.selectTicket(newTicket.id);
         });
@@ -145,7 +155,7 @@ export class Chat implements OnInit, OnDestroy {
 
   closeTicket() {
     if (this.selectedTicketId) {
-      this.ticketService.closeTicket(this.selectedTicketId).subscribe({
+      this.actionSubscription = this.ticketService.closeTicket(this.selectedTicketId).subscribe({
         next: () => {
           this.isClosed = true;
           this.loadTickets();
