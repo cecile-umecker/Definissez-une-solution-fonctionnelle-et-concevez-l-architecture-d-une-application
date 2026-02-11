@@ -15,6 +15,10 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST controller for authentication operations (register, login, logout, get current user).
+ * Uses cookie-based authentication with JWT tokens.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor

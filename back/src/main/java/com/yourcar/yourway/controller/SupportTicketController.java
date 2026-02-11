@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST controller for support ticket management (create, list, close).
+ */
 @RestController
 @RequestMapping("/api/tickets")
 @RequiredArgsConstructor

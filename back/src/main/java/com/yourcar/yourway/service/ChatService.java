@@ -17,6 +17,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service for chat message handling and ticket-message management.
+ */
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -26,6 +29,7 @@ public class ChatService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
+    // Save message and auto-assign agent if first message from agent
     @Transactional
     public ChatMessageDTO saveMessage(Long ticketId, ChatMessageDTO dto) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
@@ -59,8 +63,7 @@ public class ChatService {
         return dto;
     }
 
-    
-
+    // Retrieve all messages for a ticket ordered by timestamp
     public List<ChatMessageDTO> getMessagesByTicketId(Long ticketId) {
         return messageRepository.findByTicketIdOrderByTimestampAsc(ticketId)
             .stream()

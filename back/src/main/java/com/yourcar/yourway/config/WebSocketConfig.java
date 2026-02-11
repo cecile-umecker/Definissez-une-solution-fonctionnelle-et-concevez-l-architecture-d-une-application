@@ -10,6 +10,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 
+/**
+ * WebSocket configuration for real-time communication using STOMP protocol.
+ * Endpoints: /ws | Destinations: /topic, /queue, /app, /user
+ */
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
@@ -24,10 +28,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:4200") 
-                .withSockJS(); 
+                .setAllowedOriginPatterns("http://localhost:4200")
+                .withSockJS();
     }
 
+    // Logs WebSocket traffic for debugging - remove in production
     @Override
     public void configureWebSocketTransport(WebSocketTransportRegistration registration) {
         registration.addDecoratorFactory(handler -> new WebSocketHandlerDecorator(handler) {

@@ -15,7 +15,10 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
-
+/**
+ * WebSocket controller for real-time chat messaging on support tickets.
+ * Handles message sending, receiving, and history loading.
+ */
 @Controller
 @RequiredArgsConstructor
 public class ChatController {

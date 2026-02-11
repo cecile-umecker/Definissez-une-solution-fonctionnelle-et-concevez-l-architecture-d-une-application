@@ -13,6 +13,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Service for support ticket management (create, list, close, status updates).
+ */
 @Service
 @RequiredArgsConstructor
 public class SupportTicketService {
@@ -21,12 +24,14 @@ public class SupportTicketService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
+    // Get all tickets
     public List<TicketListDTO> getAllTickets() {
         return ticketRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .toList();
     }
 
+    // Get tickets for specific user by email
     public List<TicketListDTO> getTicketsByUserEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
@@ -36,6 +41,7 @@ public class SupportTicketService {
                 .toList();
     }
 
+    // Create new ticket and notify via WebSocket
     @Transactional
     public SupportTicket createTicket(Long userId, String subject) {
         User user = userRepository.findById(userId)
@@ -60,6 +66,7 @@ public class SupportTicketService {
         return saved;
     }
 
+    // Close ticket and notify via WebSocket
     @Transactional
     public void closeTicket(Long ticketId) {
         SupportTicket ticket = ticketRepository.findById(ticketId)
@@ -71,6 +78,7 @@ public class SupportTicketService {
 
         messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, notification);    }
 
+    // Map entity to DTO - (TODO: extract to dedicated TicketMapper class for better SOLID compliance)
     private TicketListDTO mapToDTO(SupportTicket ticket) {
         return new TicketListDTO(
                 ticket.getId(),

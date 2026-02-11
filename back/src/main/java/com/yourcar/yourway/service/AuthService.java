@@ -13,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Service for user authentication operations (register, login, logout).
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -22,6 +25,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
+    // Register new user with encoded password
     public void register(RegisterRequest request) {
         var user = User.builder()
                 .firstName(request.firstName())
@@ -35,6 +39,7 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    // Authenticate user and return JWT cookie
     public ResponseCookie authenticate(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.email(), request.password())
@@ -54,6 +59,7 @@ public class AuthService {
                 .build();
     }
 
+    // Clear JWT cookie for logout
     public ResponseCookie logout() {
         return ResponseCookie.from("jwt", "")
                 .httpOnly(true)
@@ -62,6 +68,7 @@ public class AuthService {
                 .build();
     }
 
+    // Get current authenticated user details
     public UserResponse getAuthenticatedUser() {
         var authentication = org.springframework.security.core.context.SecurityContextHolder
                 .getContext()
