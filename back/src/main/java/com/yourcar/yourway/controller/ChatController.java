@@ -42,5 +42,4 @@ public class ChatController {
         List<ChatMessageDTO> history = chatService.getMessagesByTicketId(ticketId);
         messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, history);
     }
-
 }

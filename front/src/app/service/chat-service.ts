@@ -14,7 +14,7 @@ export class ChatService {
   private messagesSubject = new BehaviorSubject<any[]>([]);
   public messages$ = this.messagesSubject.asObservable();
 
-  // Flux pour les événements de statut (fermeture, etc.)
+  // Flux pour les événements de statut (fermeture, attribution, etc.)
   private ticketEventSubject = new BehaviorSubject<any>(null);
   public ticketEvent$ = this.ticketEventSubject.asObservable();
 
@@ -46,7 +46,14 @@ export class ChatService {
           if (data.type === 'TICKET_CLOSED') {
             console.log('Signal de fermeture reçu via WebSocket');
             this.ticketEventSubject.next({ type: 'CLOSED', id: ticketId });
-            return; // On s'arrête ici pour ne pas ajouter ce JSON dans les messages
+            return;
+          }
+
+          // 1bis. 👈 INTERCEPTION DU SIGNAL D'ATTRIBUTION
+          if (data.type === 'TICKET_ASSIGNED') {
+            console.log('Signal d\'attribution reçu via WebSocket');
+            this.ticketEventSubject.next({ type: 'ASSIGNED', id: ticketId, agentId: data.agentId });
+            return; // On ne veut pas l'afficher comme un message de chat
           }
 
           // 2. GESTION DES MESSAGES CLASSIQUES

@@ -30,6 +30,10 @@ public class SupportTicket {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "agent_id")
+    private User agent;
+
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL)
     private List<Message> messages;
 

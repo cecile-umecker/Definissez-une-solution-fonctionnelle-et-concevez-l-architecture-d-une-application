@@ -9,6 +9,7 @@ import com.yourcar.yourway.repository.SupportTicketRepository;
 import com.yourcar.yourway.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate; // 👈 Ajout import
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class ChatService {
     private final MessageRepository messageRepository;
     private final SupportTicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
     public ChatMessageDTO saveMessage(Long ticketId, ChatMessageDTO dto) {
@@ -31,6 +33,18 @@ public class ChatService {
         
         User sender = userRepository.findById(dto.getSenderId())
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        if ("ROLE_AGENT".equals(sender.getRole()) && ticket.getAgent() == null) {
+            System.out.println("Assignation de l'agent " + sender.getId() + " au ticket " + ticketId);
+            ticket.setAgent(sender);
+            
+            // On force la sauvegarde du ticket immédiatement
+            ticketRepository.saveAndFlush(ticket); 
+
+            // Notification WebSocket
+            TicketEventNotification event = new TicketEventNotification("TICKET_ASSIGNED", ticketId, sender.getId());
+            messagingTemplate.convertAndSend("/topic/ticket/" + ticketId, event);
+        }
 
         Message message = Message.builder()
                 .content(dto.getText())
@@ -47,17 +61,21 @@ public class ChatService {
         return dto;
     }
 
+    
+
     public List<ChatMessageDTO> getMessagesByTicketId(Long ticketId) {
         return messageRepository.findByTicketIdOrderByTimestampAsc(ticketId)
             .stream()
             .map(msg -> {
                 ChatMessageDTO dto = new ChatMessageDTO();
                 dto.setId(msg.getId());
-                dto.setText(msg.getContent()); // On utilise msg.getContent()
-                dto.setSenderId(msg.getSender().getId()); // On utilise msg.getSender()
+                dto.setText(msg.getContent());
+                dto.setSenderId(msg.getSender().getId());
                 dto.setTimestamp(msg.getTimestamp().toString());
                 return dto;
             })
             .collect(Collectors.toList());
     }
 }
+
+record TicketEventNotification(String type, Long ticketId, Long agentId) {}

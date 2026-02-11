@@ -19,7 +19,7 @@ export class Chat implements OnInit, OnDestroy {
   newMessageText: string = '';
   activeMessages: any[] = [];
   private chatSubscription?: Subscription;
-  private statusSubscription?: Subscription; // 👈 Pour écouter les changements de statut (fermeture)
+  private statusSubscription?: Subscription;
   isClosed = false;
 
   sectionsOpen = {
@@ -44,17 +44,27 @@ export class Chat implements OnInit, OnDestroy {
     // 1. Abonnement aux nouveaux messages
     this.chatSubscription = this.chatService.messages$.subscribe((messages: any[]) => {
       this.activeMessages = messages;
-      console.log("Mise à jour de l'affichage chat:", this.activeMessages.length, "messages");
       this.cdr.detectChanges();
       setTimeout(() => this.scrollToBottom(), 100);
     });
 
-    // 2. 👈 Abonnement au signal de fermeture envoyé par le ChatService
+    // 2. Gestion des signaux WebSocket avec micro-délai pour la synchro DB
     this.statusSubscription = this.chatService.ticketEvent$.subscribe(event => {
-      if (event && event.type === 'CLOSED') {
-        console.log("Le ticket a été fermé par l'agent. Blocage de l'interface.");
-        this.isClosed = true;   // Bloque l'input de texte
-        this.loadTickets();    // Rafraîchit la sidebar pour déplacer le ticket
+      if (event) {
+        console.log(`Signal WebSocket reçu: ${event.type}`);
+
+        if (event.type === 'CLOSED') {
+          this.isClosed = true;
+        }
+        
+        // 👈 Correction : On attend que le backend ait fini de commit avant de recharger
+        if (event.type === 'CLOSED' || event.type === 'ASSIGNED') {
+          setTimeout(() => {
+            console.log("Rechargement des tickets après signal...");
+            this.loadTickets();
+          }, 300); // 300ms suffisent généralement
+        }
+        
         this.cdr.detectChanges();
       }
     });
@@ -63,7 +73,10 @@ export class Chat implements OnInit, OnDestroy {
   loadTickets() {
     this.ticketService.getUserTickets().subscribe({
       next: (data) => {
+        // On force une nouvelle référence de tableau pour déclencher le rafraîchissement Angular
         this.userTickets = [...data];
+        console.log("Tickets mis à jour dans la sidebar:", this.userTickets);
+        
         if (this.userTickets.some(t => t.status)) {
           this.sectionsOpen.active = true;
           this.sectionsOpen.unassigned = true;
@@ -79,10 +92,9 @@ export class Chat implements OnInit, OnDestroy {
 
     this.selectedTicketId = id;
 
-    // 3. 👈 Vérification immédiate du statut du ticket sélectionné
     const currentTicket = this.userTickets.find(t => t.id === id);
     if (currentTicket) {
-      this.isClosed = !currentTicket.status; // Si status=false, isClosed=true
+      this.isClosed = !currentTicket.status;
     } else {
       this.isClosed = false;
     }
@@ -115,7 +127,7 @@ export class Chat implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.chatService.disconnect();
     this.chatSubscription?.unsubscribe();
-    this.statusSubscription?.unsubscribe(); // 👈 Nettoyage du flux de statut
+    this.statusSubscription?.unsubscribe();
   }
 
   toggleSection(section: keyof typeof this.sectionsOpen) {
@@ -141,7 +153,6 @@ export class Chat implements OnInit, OnDestroy {
         next: () => {
           this.isClosed = true;
           this.loadTickets();
-          console.log("Ticket fermé avec succès");
         },
         error: (err) => console.error("Erreur lors de la fermeture :", err)
       });

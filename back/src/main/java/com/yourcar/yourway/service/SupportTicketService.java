@@ -67,7 +67,8 @@ public class SupportTicketService {
                 ticket.getId(),
                 ticket.getSubject(),
                 ticket.getStatus(),
-                ticket.getCreatedAt()
+                ticket.getCreatedAt(),
+                ticket.getAgent() != null ? ticket.getAgent().getId() : null
         );
     }
 

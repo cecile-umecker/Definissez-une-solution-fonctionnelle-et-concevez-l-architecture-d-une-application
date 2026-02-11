@@ -13,6 +13,7 @@
 
       <div class="ticket-list">
         @if (user.role === 'ROLE_AGENT') {
+          
           <div class="list-section" [class.collapsed]="!sectionsOpen.unassigned">
             <div class="section-header" (click)="toggleSection('unassigned')">
               <label>À TRAITER</label>
@@ -21,7 +22,25 @@
             @if (sectionsOpen.unassigned) {
               <div class="section-content">
                 @for (ticket of userTickets; track ticket.id) {
-                  @if (ticket.status) {
+                  @if (ticket.status && !ticket.agentId) {
+                    <div class="ticket-item" [class.active]="selectedTicketId === ticket.id" (click)="selectTicket(ticket.id)">
+                      #{{ticket.id}} - {{ticket.subject}}
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+
+          <div class="list-section" [class.collapsed]="!sectionsOpen.mine">
+            <div class="section-header" (click)="toggleSection('mine')">
+              <label>MES TICKETS EN COURS</label>
+              <svg [style.transform]="sectionsOpen.mine ? 'rotate(0deg)' : 'rotate(-90deg)'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+            @if (sectionsOpen.mine) {
+              <div class="section-content">
+                @for (ticket of userTickets; track ticket.id) {
+                  @if (ticket.status && ticket.agentId === user.id) {
                     <div class="ticket-item" [class.active]="selectedTicketId === ticket.id" (click)="selectTicket(ticket.id)">
                       #{{ticket.id}} - {{ticket.subject}}
                     </div>
