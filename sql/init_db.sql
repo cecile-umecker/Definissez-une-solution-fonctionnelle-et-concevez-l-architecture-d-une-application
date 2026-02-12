@@ -61,7 +61,6 @@ CREATE TABLE chat_message (
     is_real_time BOOLEAN DEFAULT FALSE,
     ticket_id INTEGER REFERENCES support_ticket(id),
     sender_id INTEGER REFERENCES "users"(id),
-    receiver_id INTEGER REFERENCES "users"(id)
 );
 
 -- VideoSession Table (For video calls)
