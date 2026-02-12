@@ -50,6 +50,8 @@ export class Chat implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadTickets();
     
+    this.chatService.connect(null);
+    
     this.chatSubscription = this.chatService.messages$.subscribe((messages: any[]) => {
       this.activeMessages = messages;
       this.cdr.detectChanges();

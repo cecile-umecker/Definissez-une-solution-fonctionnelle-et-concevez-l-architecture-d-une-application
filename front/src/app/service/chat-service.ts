@@ -25,7 +25,11 @@ export class ChatService {
   constructor(private http: HttpClient) { }
 
   // Connect to WebSocket and subscribe to ticket chat and events
-  connect(ticketId: number): void {
+  // Dans ChatService.ts
+
+// 1. Change le type ici : ajoute "| null"
+  connect(ticketId: number | null): void {
+    
     if (this.stompClient) {
       this.disconnect();
     }
@@ -34,50 +38,55 @@ export class ChatService {
 
     this.stompClient = new Client({
       webSocketFactory: () => socket,
-      debug: (str) => console.log('STOMP: ' + str),
+      // debug: (str) => console.log('STOMP: ' + str), // Décommente si besoin
       reconnectDelay: 5000,
     });
 
     this.stompClient.onConnect = (frame) => {
       console.log('Connecté au serveur STOMP');
+      
+      // On vide les messages par défaut
       this.messagesSubject.next([]);
-      this.ticketEventSubject.next(null);
 
+      // 2. ABONNEMENT GLOBAL (Toujours actif, même si ticketId est null)
       this.globalSubscription = this.stompClient!.subscribe('/topic/tickets/new', (message: Message) => {
         if (message.body) {
           const data = JSON.parse(message.body);
+          // Gère ici tes notifications globales (nouveau ticket créé, nouveau message reçu ailleurs, etc.)
           if (data.type === 'TICKET_CREATED') {
-            console.log('Alerte : Nouveau ticket créé en base !');
             this.ticketEventSubject.next({ type: 'CREATED' });
           }
         }
       });
 
-      this.currentSubscription = this.stompClient!.subscribe(`/topic/ticket/${ticketId}`, (message: Message) => {
-        if (message.body) {
-          const data = JSON.parse(message.body);
-          
-          if (data.type === 'TICKET_CLOSED') {
-            this.ticketEventSubject.next({ type: 'CLOSED', id: ticketId });
-            return;
-          }
+      // 3. ABONNEMENT SPÉCIFIQUE (Uniquement si on a un vrai ID)
+      if (ticketId) {
+        this.currentSubscription = this.stompClient!.subscribe(`/topic/ticket/${ticketId}`, (message: Message) => {
+          if (message.body) {
+            const data = JSON.parse(message.body);
+            
+            if (data.type === 'TICKET_CLOSED') {
+              this.ticketEventSubject.next({ type: 'CLOSED', id: ticketId });
+              return;
+            }
+            if (data.type === 'TICKET_ASSIGNED') {
+              this.ticketEventSubject.next({ type: 'ASSIGNED', id: ticketId, agentId: data.agentId });
+              return;
+            }
 
-          if (data.type === 'TICKET_ASSIGNED') {
-            this.ticketEventSubject.next({ type: 'ASSIGNED', id: ticketId, agentId: data.agentId });
-            return;
+            if (Array.isArray(data)) {
+              const history = Array.isArray(data[0]) ? data[0] : data;
+              this.messagesSubject.next(history);
+            } else {
+              const currentMessages = this.messagesSubject.getValue();
+              this.messagesSubject.next([...currentMessages, data]);
+            }
           }
+        });
 
-          if (Array.isArray(data)) {
-            const history = Array.isArray(data[0]) ? data[0] : data;
-            this.messagesSubject.next(history);
-          } else {
-            const currentMessages = this.messagesSubject.getValue();
-            this.messagesSubject.next([...currentMessages, data]);
-          }
-        }
-      });
-
-      this.loadHistory(ticketId);
+        // On charge l'historique seulement si on a ciblé un ticket
+        this.loadHistory(ticketId);
+      }
     };
 
     this.stompClient.activate();
