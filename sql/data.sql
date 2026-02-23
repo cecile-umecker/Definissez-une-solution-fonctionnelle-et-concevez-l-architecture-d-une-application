@@ -19,11 +19,17 @@ INSERT INTO vehicle (brand, model, license_plate, category) VALUES
 ('Tesla', 'Model 3', 'EE-789-FF', 'ELECTRIC'),
 ('Volkswagen', 'Golf 8', 'GG-012-HH', 'COMPACT');
 
+-- 4. Insertion des Propositions de location (BookingProposal)
+INSERT INTO booking_proposal (start_date, end_date, proposed_price, valid_until, vehicle_id, departure_agency_id, return_agency_id) VALUES
+('2026-03-01 09:00:00', '2026-03-05 18:00:00', 250.00, '2026-02-28 09:00:00', 1, 1, 1),
+('2026-04-10 10:00:00', '2026-04-12 10:00:00', 450.00, '2026-04-09 10:00:00', 2, 2, 3),
+('2026-02-15 08:00:00', '2026-02-16 20:00:00', 120.00, '2026-02-14 08:00:00', 4, 1, 1);
+
 -- 4. Insertion des Réservations (Booking)
-INSERT INTO booking (start_date, end_date, total_amount, status, user_id, vehicle_id, departure_agency_id, return_agency_id) VALUES
-('2026-03-01 09:00:00', '2026-03-05 18:00:00', 250.00, 'CONFIRMED', 1, 1, 1, 1),
-('2026-04-10 10:00:00', '2026-04-12 10:00:00', 450.00, 'PENDING', 2, 2, 2, 3),
-('2026-02-15 08:00:00', '2026-02-16 20:00:00', 120.00, 'CANCELLED', 1, 4, 1, 1);
+INSERT INTO booking (status, user_id, proposal_id) VALUES
+('CONFIRMED', 1, 1),
+('PENDING', 2, 2),
+('CANCELLED', 1, 3)
 
 -- 5. Insertion des Tickets de Support
 INSERT INTO support_ticket (created_at, status, subject, user_id, agent_id) VALUES

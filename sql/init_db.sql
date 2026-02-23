@@ -30,17 +30,24 @@ CREATE TABLE vehicle (
     category VARCHAR(50) NOT NULL
 );
 
--- Booking Table
-CREATE TABLE booking (
+-- BookingProposal Table
+CREATE TABLE booking_proposal (
     id SERIAL PRIMARY KEY,
     start_date TIMESTAMP NOT NULL, 
     end_date TIMESTAMP NOT NULL,
-    total_amount DECIMAL(10, 2) NOT NULL, 
-    status booking_status DEFAULT 'PENDING',
-    user_id INTEGER REFERENCES "users"(id),
+    proposed_price DECIMAL(10, 2) NOT NULL, 
+    valid_until TIMESTAMP NOT NULL,
     vehicle_id INTEGER REFERENCES vehicle(id),
     departure_agency_id INTEGER REFERENCES agency(id),
     return_agency_id INTEGER REFERENCES agency(id)
+);
+
+-- Booking Table
+CREATE TABLE booking (
+    id SERIAL PRIMARY KEY,
+    status booking_status DEFAULT 'PENDING',
+    user_id INTEGER REFERENCES "users"(id),
+    proposal_id INTEGER REFERENCES booking_proposal(id)
 );
 
 -- SupportTicket Table
